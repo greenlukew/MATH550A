@@ -1,6 +1,6 @@
 n = 20
 x = linspace(0, 2*pi, n)';
-dx = x(1) - x(2)
+dx = x(2) - x(1)
 
 f = exp(sin(x))
 
@@ -15,7 +15,7 @@ df = M*f / dx
 
 df(2:n-1) = df(2:n-1) / 2;
 
-true_df = -cos(x) .*f
+true_df = cos(x) .*f
 
 numeric_color = "#009E73"
 exact_color = "#D55E00"
@@ -26,7 +26,9 @@ plot(x, true_df, '-', 'Color', exact_color, 'LineWidth', 3)
 hold on
 plot(x, df, '--', 'Color', numeric_color, 'LineWidth', 3)
 hold off
-xlabel('X')
-ylabel('Y')
-legend('Exact solution', 'Numerical solution')
+xlabel('X', 'FontSize', 18)
+ylabel('Y', 'FontSize', 18)
+legend('Exact solution', 'Numerical solution', 'FontSize', 18)
 grid on
+
+set(gca, 'FontSize', 16)   % <-- enlarges the tick labels

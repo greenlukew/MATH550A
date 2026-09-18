@@ -1,21 +1,22 @@
 function E = compute_error(n)
     x = linspace(0, 2*pi, n)';
     dx = x(2) - x(1);
+    x = [x(1) - dx; x];
+    x = [x; x(n + 1) + dx]
     
-    f = exp(sin(x));
+    
+    f = exp(sin(x))
     
     
-    e = ones(n, 1);
-    M = spdiags([-e, zeros(n,1), e], [-1 0 1], n, n);
+    e = ones(n + 2, 1);
+    M = spdiags([e, -2*e, e], [0 1 2], n, n + 2);
+    full(M)
+    df = M*f / (dx^2)
     
-    M(1, 1) = -1;
-    M(n, n) = 1;
+    true_df = (cos(x).*cos(x) - sin(x)) .*f
     
-    df = M*f / dx;
-    
-    df(2:n-1) = df(2:n-1) / 2;
-    
-    true_df = cos(x) .*f;
+    true_df = true_df(2:n + 1)
+    x = x(2:n + 1);
     
     df_diff = true_df - df;
     
@@ -51,7 +52,5 @@ xlabel('X', 'FontSize', 18)
 ylabel('Y', 'FontSize', 18)
 legend('2 norm', 'Inf norm', 'FontSize', 18)
 grid on
-
 set(gca, 'FontSize', 16)   % <-- enlarges the tick labels
-
 p = polyfit(X, Y2, 1)

@@ -27,7 +27,9 @@ plot(x, true_df, '-', 'Color', exact_color, 'LineWidth', 3)
 hold on
 plot(x, df, '--', 'Color', numeric_color, 'LineWidth', 3)
 hold off
-xlabel('X')
-ylabel('Y')
-legend('Exact solution', 'Numerical solution')
+xlabel('X', 'FontSize', 18)
+ylabel('Y', 'FontSize', 18)
+legend('Exact solution', 'Numerical solution', 'FontSize', 18)
 grid on
+
+set(gca, 'FontSize', 16)   % <-- enlarges the tick labels

@@ -2,9 +2,6 @@ n = 100
 x = linspace(0, 5, n)';
 dx = x(2) - x(1);
 
-alpha = 5
-beta = 2
-
 max_entries = (n-2) * 3 + 2
 
 rows = zeros(max_entries, 1);
@@ -74,7 +71,9 @@ plot(x, U, '-', 'Color', color_2, 'LineWidth', 3)
 hold on
 plot(x, true_U, '--', 'Color', color_inf, 'LineWidth', 3)
 hold off
-xlabel('X')
-ylabel('Y')
-legend('U numerical', 'U actual')
+xlabel('X', 'FontSize', 18)
+ylabel('Y', 'FontSize', 18)
+legend('U numerical', 'U actual', 'FontSize', 18)
 grid on
+
+set(gca, 'FontSize', 16)   % <-- enlarges the tick labels
