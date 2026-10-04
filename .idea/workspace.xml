@@ -173,7 +173,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1791065130943</updated>
-      <workItem from="1791131592128" duration="8961000" />
+      <workItem from="1791131592128" duration="9930000" />
     </task>
     <servers />
   </component>
@@ -181,7 +181,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MATH550A$test.coverage" NAME="test Coverage Results" MODIFIED="1791141163808" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
+    <SUITE FILE_PATH="coverage/MATH550A$test.coverage" NAME="test Coverage Results" MODIFIED="1791141499945" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
     <SUITE FILE_PATH="coverage/MATH550A$fixed.coverage" NAME="fixed Coverage Results" MODIFIED="1791140428468" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
     <SUITE FILE_PATH="coverage/MATH550A$stokes_staggered_grid.coverage" NAME="stokes_staggered_grid Coverage Results" MODIFIED="1791131920052" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
   </component>

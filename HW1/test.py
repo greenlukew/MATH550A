@@ -87,7 +87,7 @@ for j in range(n):
             # Lu
             matrices["rows"]["Lu"].extend([center, center])
             matrices["cols"]["Lu"].extend([neighbor, center])
-            matrices["vals"]["Lu"].extend([0.5, 0.5])
+            matrices["vals"]["Lu"].extend([0.5, 0.5]) # average U values on either side of the boundary
             true_F[center] = 0  # boundary condition
 
             # Lv
