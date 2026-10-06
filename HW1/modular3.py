@@ -108,6 +108,11 @@ for j in range(n):
             matrices["cols"]["Lv"].extend([center])
             matrices["vals"]["Lv"].extend([1.0])
             true_G[center] = -3.5
+            # Dy
+            matrices["rows"]["Dy"].extend([center])
+            matrices["cols"]["Dy"].extend([below])
+            matrices["vals"]["Dy"].extend([-1])
+            true_H[center] = 3.5
             continue
 
         if i == n-1:
@@ -129,8 +134,13 @@ for j in range(n):
             matrices["cols"]["Lv"].extend([center])
             matrices["vals"]["Lv"].extend([1.0])
             true_G[center] = -3.5
+            # Dy
+            matrices["rows"]["Dy"].extend([center])
+            matrices["cols"]["Dy"].extend([above])
+            matrices["vals"]["Dy"].extend([1])
+            true_H[center] = -3.5
             continue
-
+        
         if i == 1:
             # Remove v_above in Lv equation when next to top boundary and move 3.5 to the right hand side
             # Lv
@@ -149,13 +159,16 @@ for j in range(n):
             matrices["vals"]["Dy"].extend([-1.0])
             # Adding 3.5 to the right hand side of the eq
             true_H[center] = 3.5
-
-            # Populate the rest of the matrices normally
-            populate(i, j, "Lu")
-            populate(i, j, "Gx")
-            populate(i, j, "Gy")
-            populate(i, j, "Dx")
             continue
+        else:
+            # Lv
+            matrices["rows"]["Lv"].extend([center, center, center, center, center])
+            matrices["cols"]["Lv"].extend([center, below, above, left, right])
+            matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
+            # Dy
+            matrices["rows"]["Dy"].extend([center, center])
+            matrices["cols"]["Dy"].extend([below, above])
+            matrices["vals"]["Dy"].extend([-1, 1])
 
         if i == n - 2:
             # Remove v_below in Lv equation when next to top boundary and move 3.5 to the right hand side
@@ -175,22 +188,33 @@ for j in range(n):
             matrices["vals"]["Dy"].extend([1.0])
             # Subtracting 3.5 from the right hand side of the eq
             true_H[center] = -3.5
+        else:
+            # Lv
+            matrices["rows"]["Lv"].extend([center, center, center, center, center])
+            matrices["cols"]["Lv"].extend([center, below, above, left, right])
+            matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
+            # Dy
+            matrices["rows"]["Dy"].extend([center, center])
+            matrices["cols"]["Dy"].extend([below, above])
+            matrices["vals"]["Dy"].extend([-1, 1])
 
-            # Populate the rest of the matrices normally
-            populate(i, j, "Lu")
-            populate(i, j, "Gx")
-            populate(i, j, "Gy")
-            populate(i, j, "Dx")
-            continue
+        # Lu
+        matrices["rows"]["Lu"].extend([center, center, center, center, center])
+        matrices["cols"]["Lu"].extend([center, below, above, left, right])
+        matrices["vals"]["Lu"].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
+        # Gx
+        matrices["rows"]["Gx"].extend([center, center])
+        matrices["cols"]["Gx"].extend([left, right])
+        matrices["vals"]["Gx"].extend([-0.5*h, 0.5*h])
+        # Dx
+        matrices["rows"]["Dx"].extend([center, center])
+        matrices["cols"]["Dx"].extend([left, right])
+        matrices["vals"]["Dx"].extend([-1, 1])
+        # Gy
+        matrices["rows"]["Gy"].extend([center, center])
+        matrices["cols"]["Gy"].extend([below, above])
+        matrices["vals"]["Gy"].extend([-0.5*h, 0.5*h])
 
-
-
-        populate(i, j, "Lu")
-        populate(i, j, "Lv")
-        populate(i, j, "Gx")
-        populate(i, j, "Gy")
-        populate(i, j, "Dx")
-        populate(i, j, "Dy")
         # Define forcing function values
         true_F[center] = f(x[j], y[y_idx] + 0.5 * h) * pow(h, 2)
         true_G[center] = g(x[j] + 0.5 * h, y[y_idx]) * pow(h, 2)
@@ -246,23 +270,35 @@ P = S[2*L:3*L].reshape(n, n, order="F")
 # Reshape true_U, true_V
 true_U = true_U.reshape(n, n, order="F")
 true_V = true_V.reshape(n, n, order="F")
+# SOLVE
+b = true_F.reshape(-1, 1) + Gx.dot(true_P).reshape(-1, 1)
+b2 = true_V.reshape(-1, 1) + Gy.dot(true_P).reshape(-1, 1)
 
-# Plot exact vs. numeric toggle
-#U = true_U
-#V = true_V
 
-speed = np.sqrt(U**2 + V**2)
+S = spsolve(Lv, b2)
+S = spsolve(Lu, b)
+# Reshare and remove ghost points from U, V, P
+S = S.reshape(n, n, order="F")
 
-fig, ax = plt.subplots(figsize=(7, 7))
+# Reshape and remove ghost points from true_U, true_V
+true_U = true_U.reshape(n, n, order="F")
+true_V = true_V.reshape(n, n, order="F")
 
-# Background: filled contours of speed
-cf = ax.contourf(X, Y, speed, levels=50, cmap="viridis")
+true_S = true_U
 
-# Streamlines in white on top
-ax.streamplot(X, Y, U, V, color="black", density=1.3, linewidth=1.0, arrowsize=1.2)
 
-fig.colorbar(cf, ax=ax, label="speed")
-ax.set_aspect("equal")
-ax.set_xlabel("x"); ax.set_ylabel("y")
-ax.set_title("Streamlines (black) over speed field")
+
+#plt.subplot(1, 2, 1)
+#plt.spy(M, markersize=1)
+#plt.show()
+# Create a 2x1 grid of subplots
+fig, axs = plt.subplots(2)
+
+axs[0].pcolormesh(X,Y,S)
+axs[0].set_title("Numerical solution")
+
+axs[1].pcolormesh(X,Y,true_S)
+axs[1].set_title("Exact solution")
+
+plt.tight_layout()
 plt.show()
