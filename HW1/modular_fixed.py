@@ -220,56 +220,45 @@ Dx = convert_to_csr("Dx")
 Dy = convert_to_csr("Dy")
 # Zero matrix
 Z = csr_matrix((L, L))
-
 p_pin = 0
 Lp = csr_matrix(([1.0], ([p_pin], [p_pin])), shape=(L, L))
 
+Y = np.concatenate([true_F, true_G, true_H])
 
-M = bmat([[Lu, Z, -Gx]], format="csr")
+M = bmat([[Lu, Z, -Gx],
+          [Z, Lv, -Gy],
+          [Dx, Dy, Z]], format="csr")
 
-row_norms = np.asarray(np.abs(M).sum(axis=1)).ravel()
-zero_rows = np.where(row_norms == 0)[0]
-
-# Remove ghost points from the grid
-x_int = x[1:-1]                          # 5 points: 0, h, 2h, 3h, 4h
-y_int = y[1:-1]
+S = spsolve(M, Y)
+print("solved")
 
 # Meshgrid
-X, Y = np.meshgrid(x_int, y_int)
+X, Y = np.meshgrid(x, y)
 
-Y_right = np.concatenate([true_F, true_G, true_H])
-
-
-Px = Gx.dot(list2csr(true_P))
-# SOLVE
-b = true_F.reshape(-1, 1) + Gx.dot(true_P).reshape(-1, 1)
-b2 = true_V.reshape(-1, 1) + Gy.dot(true_P).reshape(-1, 1)
-
-
-S = spsolve(Lv, b2)
-#S = spsolve(Lu, b)
 # Reshare and remove ghost points from U, V, P
-S = S.reshape(n, n, order="F")[1:-1, 1:-1]
+U = S[:L].reshape(n, n, order="F")
+V = S[L:2*L].reshape(n, n, order="F")
+P = S[2*L:3*L].reshape(n, n, order="F")
 
-# Reshape and remove ghost points from true_U, true_V
-true_U = true_U.reshape(n, n, order="F")[1:-1, 1:-1]
-true_V = true_V.reshape(n, n, order="F")[1:-1, 1:-1]
+# Reshape true_U, true_V
+true_U = true_U.reshape(n, n, order="F")
+true_V = true_V.reshape(n, n, order="F")
 
-true_S = true_V
+U = true_U
+V = true_V
 
+speed = np.sqrt(U**2 + V**2)
 
+fig, ax = plt.subplots(figsize=(7, 7))
 
-#plt.subplot(1, 2, 1)
-#plt.spy(M, markersize=1)
-#plt.show()
-# Create a 2x1 grid of subplots
-fig, axs = plt.subplots(2)
+# Background: filled contours of speed
+cf = ax.contourf(X, Y, speed, levels=50, cmap="viridis")
 
-axs[0].pcolormesh(X,Y,S)
-axs[0].set_title("Numerical solution")
+# Streamlines in white on top
+ax.streamplot(X, Y, U, V, color="white", density=1.3, linewidth=1.0, arrowsize=1.2)
 
-axs[1].pcolormesh(X,Y,true_S)
-axs[1].set_title("Exact solution")
-
-plt.tight_layout()
+fig.colorbar(cf, ax=ax, label="speed")
+ax.set_aspect("equal")
+ax.set_xlabel("x"); ax.set_ylabel("y")
+ax.set_title("Streamlines (white) over speed field")
 plt.show()
