@@ -76,22 +76,45 @@ for j in range(n):
         right = ((j + 1) % n) * n + i
         # Boundary conditions (TOP)
         if i == 0:
+            # Equation for F
             # Lu
-            matrices["rows"][matrix].extend([center, center, center, center])
-            matrices["cols"][matrix].extend([center, below, left, right])
-            matrices["vals"][matrix].extend([-5.0, 1.0, 1.0, 1.0])
+            matrices["rows"]["Lu"].extend([center, center, center, center])
+            matrices["cols"]["Lu"].extend([center, below, left, right])
+            matrices["vals"]["Lu"].extend([-5.0, 1.0, 1.0, 1.0])
+            # Gx
+            matrices["rows"]["Gx"].extend([center, center])
+            matrices["cols"]["Gx"].extend([left, right])
+            matrices["vals"]["Gx"].extend([-0.5 * h, 0.5 * h])
+            # = F
+            true_F[center] = f(x[j], y[y_idx] + 0.5 * h) * pow(h, 2)
 
+            # Equation for G
             # Lv
-            matrices["rows"][matrix].extend([center, center, center, center, center])
-            matrices["cols"][matrix].extend([center, below, above, left, right])
-            matrices["vals"][matrix].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
-            true_G[center] = -3.5  # boundary condition
+            matrices["rows"]["Lv"].extend([center])
+            matrices["cols"]["Lv"].extend([center])
+            matrices["vals"]["Lv"].extend([1.0])
+            true_G[center] = -3.5
+            continue
 
-            # Dy
-            matrices["rows"]["Dy"].extend([center])
-            matrices["cols"]["Dy"].extend([center])
-            matrices["vals"]["Dy"].extend([-1])
-            true_H[center] = 3.5
+        if i == n-1:
+            # Equation for F
+            # Lu
+            matrices["rows"]["Lu"].extend([center, center, center, center])
+            matrices["cols"]["Lu"].extend([center, above, left, right])
+            matrices["vals"]["Lu"].extend([-5.0, 1.0, 1.0, 1.0])
+            # Gx
+            matrices["rows"]["Gx"].extend([center, center])
+            matrices["cols"]["Gx"].extend([left, right])
+            matrices["vals"]["Gx"].extend([-0.5 * h, 0.5 * h])
+            # = F
+            true_F[center] = f(x[j], y[y_idx] + 0.5 * h) * pow(h, 2)
+
+            # Equation for G
+            # Lv
+            matrices["rows"]["Lv"].extend([center])
+            matrices["cols"]["Lv"].extend([center])
+            matrices["vals"]["Lv"].extend([1.0])
+            true_G[center] = -3.5
             continue
 
         populate(i, j, "Lu")
@@ -162,6 +185,7 @@ b2 = true_V.reshape(-1, 1) + Gy.dot(true_P).reshape(-1, 1)
 
 
 S = spsolve(Lv, b2)
+#S = spsolve(Lu, b)
 # Reshare and remove ghost points from U, V, P
 S = S.reshape(n, n, order="F")[1:-1, 1:-1]
 
