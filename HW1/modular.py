@@ -4,10 +4,11 @@ from scipy.sparse import coo_matrix, csr_matrix, bmat
 from scipy.sparse.linalg import spsolve
 
 n = 10
+L = n * n
 len = 1
 h = 1.0 * len / n
-x = np.linspace(-h, len, n + 2)
-y = np.linspace(-h, len, n + 2)
+x = np.linspace(0, len, n)
+y = np.linspace(0, len, n)
 
 pi = np.pi
 
@@ -26,8 +27,7 @@ matrices = {
     "cols": {k: [] for k in m},
     "vals": {k: [] for k in m},
 }
-n = n + 2
-L = n * n
+
 # Define lists for exact soolutions
 true_U = np.zeros(L)
 true_V = np.zeros(L)
@@ -56,64 +56,42 @@ def populate(i, j, matrix):
     elif matrix in ["Gx", "Dx"]:
         matrices["rows"][matrix].extend([center, center])
         matrices["cols"][matrix].extend([left, right])
-        matrices["vals"][matrix].extend([-1/h, 1/h])
+        matrices["vals"][matrix].extend([-0.5*h, 0.5*h])
     elif matrix in ["Gy", "Dy"]:
         matrices["rows"][matrix].extend([center, center])
         matrices["cols"][matrix].extend([below, above])
-        matrices["vals"][matrix].extend([-1/h, 1/h])
+        matrices["vals"][matrix].extend([-0.5*h, 0.5*h])
     else:
         None
-
-
-def populate_val(i, j, matrix, val):
-    global matrices
-    center = j * n + i
-    matrices["rows"][matrix].append(center)
-    matrices["cols"][matrix].append(center)
-    matrices["vals"][matrix].append(val)
 
 
 # Populate
 for j in range(n):
     for i in range(n):
-        center = (j * n) + i
-        y_idx = i #n - 1 - i
-        # Boundary conditions (ABOVE / BELOW)
-        if i == 0 or i == n - 1:
-            if i == 0:
-                neighbor = center + 1
-            else:
-                neighbor = center - 1
+        center = j * n + i
+        y_idx = i
+        below = center + 1
+        above = center - 1
+        left = ((j - 1) % n) * n + i
+        right = ((j + 1) % n) * n + i
+        # Boundary conditions (TOP)
+        if i == 0:
             # Lu
-            matrices["rows"]["Lu"].extend([center, center])
-            matrices["cols"]["Lu"].extend([neighbor, center])
-            matrices["vals"]["Lu"].extend([0.5, 0.5]) # average U values on either side of the boundary
-            true_F[center] = 0  # boundary condition
+            matrices["rows"][matrix].extend([center, center, center, center])
+            matrices["cols"][matrix].extend([center, below, left, right])
+            matrices["vals"][matrix].extend([-5.0, 1.0, 1.0, 1.0])
 
             # Lv
-            matrices["rows"]["Lv"].append(center)
-            matrices["cols"]["Lv"].append(center)
-            matrices["vals"]["Lv"].append(1.0)
+            matrices["rows"][matrix].extend([center, center, center, center, center])
+            matrices["cols"][matrix].extend([center, below, above, left, right])
+            matrices["vals"][matrix].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
             true_G[center] = -3.5  # boundary condition
 
             # Dy
-            if i == 0:
-                above = center + 1
-            else:
-                above = center - 1
-            matrices["rows"]["Dy"].extend([center, center])
-            matrices["cols"]["Dy"].extend([center, above])
-            matrices["vals"]["Dy"].extend([0.5, 0.5])  # average U values on either side of the boundary
-            # true_H[center] already = 0
-
-            populate(i, j, "Gx")
-            populate(i, j, "Dx")
-
-            # populate_val(i, j, "Gx", 0.0)
-            # populate_val(i, j, "Dx", 0.0)
-
-            populate_val(i, j, "Gy", 0.0)
-            #populate_val(i, j, "Dy", 0.0)
+            matrices["rows"]["Dy"].extend([center])
+            matrices["cols"]["Dy"].extend([center])
+            matrices["vals"]["Dy"].extend([-1])
+            true_H[center] = 3.5
             continue
 
         populate(i, j, "Lu")
@@ -140,6 +118,12 @@ def convert_to_csr(matrix):
         shape=(L, L),
     ).tocsr()
 
+def list2csr(my_list):
+    # Step 2: Convert the list to a 2D array
+    array_2d = np.array(my_list).reshape(-1, 1)  # Reshape to a column vector
+
+    # Step 3: Convert to CSR format
+    return csr_matrix(array_2d)
 
 Lu = convert_to_csr("Lu")
 Lv = convert_to_csr("Lv")
@@ -156,21 +140,10 @@ p_pin = 0
 Lp = csr_matrix(([1.0], ([p_pin], [p_pin])), shape=(L, L))
 
 
-M = bmat([[Lu, Z, -Gx],
-          [Z, Lv, -Gy],
-          [Dx, Dy, Z]], format="csr")
+M = bmat([[Lu, Z, -Gx]], format="csr")
 
 row_norms = np.asarray(np.abs(M).sum(axis=1)).ravel()
 zero_rows = np.where(row_norms == 0)[0]
-print(zero_rows)
-
-plt.spy(M, markersize=1)
-plt.show()
-
-Y = np.concatenate([true_F, true_G, true_H])
-
-S = spsolve(M, Y)
-print("solved")
 
 # Remove ghost points from the grid
 x_int = x[1:-1]                          # 5 points: 0, h, 2h, 3h, 4h
@@ -179,39 +152,38 @@ y_int = y[1:-1]
 # Meshgrid
 X, Y = np.meshgrid(x_int, y_int)
 
-print(X)
-print(Y)
+Y_right = np.concatenate([true_F, true_G, true_H])
 
+
+Px = Gx.dot(list2csr(true_P))
+# SOLVE
+b = true_F.reshape(-1, 1) + Gx.dot(true_P).reshape(-1, 1)
+b2 = true_V.reshape(-1, 1) + Gy.dot(true_P).reshape(-1, 1)
+
+
+S = spsolve(Lv, b2)
 # Reshare and remove ghost points from U, V, P
-U = S[:L].reshape(n, n, order="F")[1:-1, 1:-1]
-V = S[L:2*L].reshape(n, n, order="F")[1:-1, 1:-1]
-P = S[2*L:3*L].reshape(n, n, order="F")[1:-1, 1:-1]
+S = S.reshape(n, n, order="F")[1:-1, 1:-1]
 
-print(true_U)
-print(true_V)
 # Reshape and remove ghost points from true_U, true_V
 true_U = true_U.reshape(n, n, order="F")[1:-1, 1:-1]
 true_V = true_V.reshape(n, n, order="F")[1:-1, 1:-1]
 
-print("true_U_grid[1,1] =", true_U[1, 1])   # expect 0
-print("true_U_grid[1,2] =", true_U[1, 2])   # expect 0.559
-print("true_U_grid[2,2] =", true_U[2, 2])   # expect 0.904
+true_S = true_V
 
-#U = true_U
-#V = true_V
 
-speed = np.sqrt(U**2 + V**2)
 
-fig, ax = plt.subplots(figsize=(7, 7))
+#plt.subplot(1, 2, 1)
+#plt.spy(M, markersize=1)
+#plt.show()
+# Create a 2x1 grid of subplots
+fig, axs = plt.subplots(2)
 
-# Background: filled contours of speed
-cf = ax.contourf(X, Y, speed, levels=50, cmap="viridis")
+axs[0].pcolormesh(X,Y,S)
+axs[0].set_title("Numerical solution")
 
-# Streamlines in white on top
-ax.streamplot(X, Y, U, V, color="white", density=1.3, linewidth=1.0, arrowsize=1.2)
+axs[1].pcolormesh(X,Y,true_S)
+axs[1].set_title("Exact solution")
 
-fig.colorbar(cf, ax=ax, label="speed")
-ax.set_aspect("equal")
-ax.set_xlabel("x"); ax.set_ylabel("y")
-ax.set_title("Streamlines (white) over speed field")
+plt.tight_layout()
 plt.show()
