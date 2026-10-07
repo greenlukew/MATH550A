@@ -141,63 +141,14 @@ for j in range(n):
             true_H[center] = -3.5
             continue
         
-        if i == 1:
-            # Remove v_above in Lv equation when next to top boundary and move 3.5 to the right hand side
-            # Lv
-            matrices["rows"]["Lv"].extend([center, center,  center, center])
-            matrices["cols"]["Lv"].extend([center, below, left, right])
-            matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0])
-            # Adding 3.5 as we are moving v_above from the left hand side of the eq to the right hand side
-            # G
-            true_G[center] = g(x[j] + 0.5 * h, y[y_idx]) * pow(h, 2) + 3.5
-
-            # Remove v_above in Dy equation when next to top boundary and move 3.5 to the right hand side
-            # Dy
-            matrices["rows"]["Dy"].extend([center])
-            matrices["cols"]["Dy"].extend([below])
-            # Set to -1.0 because we subtract v_center from v_above in the numerator of Dy
-            matrices["vals"]["Dy"].extend([-1.0])
-            # Adding 3.5 to the right hand side of the eq
-            true_H[center] = 3.5
-            continue
-        else:
-            # Lv
-            matrices["rows"]["Lv"].extend([center, center, center, center, center])
-            matrices["cols"]["Lv"].extend([center, below, above, left, right])
-            matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
-            # Dy
-            matrices["rows"]["Dy"].extend([center, center])
-            matrices["cols"]["Dy"].extend([below, above])
-            matrices["vals"]["Dy"].extend([-1, 1])
-
-        if i == n - 2:
-            # Remove v_below in Lv equation when next to top boundary and move 3.5 to the right hand side
-            # Lv
-            matrices["rows"]["Lv"].extend([center, center,  center, center])
-            matrices["cols"]["Lv"].extend([center, above, left, right])
-            matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0])
-            # Adding 3.5 as we are moving v_above from the left hand side of the eq to the right hand side
-            # G
-            true_G[center] = g(x[j] + 0.5 * h, y[y_idx]) * pow(h, 2) + 3.5
-
-            # Remove v_below in Dy equation when next to top boundary and move 3.5 to the right hand side
-            # Dy
-            matrices["rows"]["Dy"].extend([center])
-            matrices["cols"]["Dy"].extend([above])
-            # Set to 1.0 because we subtract v_below from v_center in the numerator of Dy
-            matrices["vals"]["Dy"].extend([1.0])
-            # Subtracting 3.5 from the right hand side of the eq
-            true_H[center] = -3.5
-        else:
-            # Lv
-            matrices["rows"]["Lv"].extend([center, center, center, center, center])
-            matrices["cols"]["Lv"].extend([center, below, above, left, right])
-            matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
-            # Dy
-            matrices["rows"]["Dy"].extend([center, center])
-            matrices["cols"]["Dy"].extend([below, above])
-            matrices["vals"]["Dy"].extend([-1, 1])
-
+        # Lv
+        matrices["rows"]["Lv"].extend([center, center, center, center, center])
+        matrices["cols"]["Lv"].extend([center, below, above, left, right])
+        matrices["vals"]["Lv"].extend([-4.0, 1.0, 1.0, 1.0, 1.0])
+        # Dy
+        matrices["rows"]["Dy"].extend([center, center])
+        matrices["cols"]["Dy"].extend([below, above])
+        matrices["vals"]["Dy"].extend([1, -1])
         # Lu
         matrices["rows"]["Lu"].extend([center, center, center, center, center])
         matrices["cols"]["Lu"].extend([center, below, above, left, right])
@@ -213,7 +164,7 @@ for j in range(n):
         # Gy
         matrices["rows"]["Gy"].extend([center, center])
         matrices["cols"]["Gy"].extend([below, above])
-        matrices["vals"]["Gy"].extend([-0.5*h, 0.5*h])
+        matrices["vals"]["Gy"].extend([0.5*h, -0.5*h])
 
         # Define forcing function values
         true_F[center] = f(x[j], y[y_idx] + 0.5 * h) * pow(h, 2)
@@ -259,46 +210,29 @@ M = bmat([[Lu, Z, -Gx],
 S = spsolve(M, Y)
 print("solved")
 
-# Meshgrid
-X, Y = np.meshgrid(x, y)
-
 # Reshare and remove ghost points from U, V, P
 U = S[:L].reshape(n, n, order="F")
 V = S[L:2*L].reshape(n, n, order="F")
 P = S[2*L:3*L].reshape(n, n, order="F")
 
+# Meshgrid
+X, Y = np.meshgrid(x, y)
 # Reshape true_U, true_V
 true_U = true_U.reshape(n, n, order="F")
 true_V = true_V.reshape(n, n, order="F")
-# SOLVE
-b = true_F.reshape(-1, 1) + Gx.dot(true_P).reshape(-1, 1)
-b2 = true_V.reshape(-1, 1) + Gy.dot(true_P).reshape(-1, 1)
 
+speed = np.sqrt(U**2 + V**2)
 
-S = spsolve(Lv, b2)
-S = spsolve(Lu, b)
-# Reshare and remove ghost points from U, V, P
-S = S.reshape(n, n, order="F")
+fig, ax = plt.subplots(figsize=(7, 7))
 
-# Reshape and remove ghost points from true_U, true_V
-true_U = true_U.reshape(n, n, order="F")
-true_V = true_V.reshape(n, n, order="F")
+# Background: filled contours of speed
+cf = ax.contourf(X, Y, speed, levels=50, cmap="viridis")
 
-true_S = true_U
+# Streamlines in white on top
+ax.streamplot(X, Y, U, V, color="white", density=1.3, linewidth=1.0, arrowsize=1.2)
 
-
-
-#plt.subplot(1, 2, 1)
-#plt.spy(M, markersize=1)
-#plt.show()
-# Create a 2x1 grid of subplots
-fig, axs = plt.subplots(2)
-
-axs[0].pcolormesh(X,Y,S)
-axs[0].set_title("Numerical solution")
-
-axs[1].pcolormesh(X,Y,true_S)
-axs[1].set_title("Exact solution")
-
-plt.tight_layout()
+fig.colorbar(cf, ax=ax, label="speed")
+ax.set_aspect("equal")
+ax.set_xlabel("x"); ax.set_ylabel("y")
+ax.set_title("Streamlines (white) over speed field")
 plt.show()
