@@ -38,6 +38,7 @@
     "Python.modular2.executor": "Run",
     "Python.modular3.executor": "Run",
     "Python.modular_fixed.executor": "Run",
+    "Python.stokes_2d.executor": "Run",
     "Python.stokes_staggered_grid.executor": "Run",
     "Python.test.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -285,7 +286,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1791065130943</updated>
-      <workItem from="1791131592128" duration="32612000" />
+      <workItem from="1791131592128" duration="33672000" />
     </task>
     <servers />
   </component>
@@ -297,7 +298,7 @@
     <SUITE FILE_PATH="coverage/MATH550A$modular_fixed.coverage" NAME="modular_fixed Coverage Results" MODIFIED="1791409888791" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
     <SUITE FILE_PATH="coverage/MATH550A$modular.coverage" NAME="modular Coverage Results" MODIFIED="1791409970826" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
     <SUITE FILE_PATH="coverage/MATH550A$fixed.coverage" NAME="fixed Coverage Results" MODIFIED="1791140428468" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
-    <SUITE FILE_PATH="coverage/MATH550A$modular2.coverage" NAME="modular2 Coverage Results" MODIFIED="1791411501196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
+    <SUITE FILE_PATH="coverage/MATH550A$modular2.coverage" NAME="stokes_2d Coverage Results" MODIFIED="1791413625011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
     <SUITE FILE_PATH="coverage/MATH550A$modular3.coverage" NAME="modular3 Coverage Results" MODIFIED="1791409943396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
     <SUITE FILE_PATH="coverage/MATH550A$stokes_staggered_grid.coverage" NAME="stokes_staggered_grid Coverage Results" MODIFIED="1791131920052" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/HW1" />
   </component>

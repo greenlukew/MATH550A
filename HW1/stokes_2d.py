@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.sparse import coo_matrix, csr_matrix, bmat
 from scipy.sparse.linalg import spsolve
 
-n = 10
+n = 100
 L = n * n
 len = 1
 h = 1.0 * len / n
