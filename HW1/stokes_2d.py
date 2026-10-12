@@ -221,6 +221,9 @@ X, Y = np.meshgrid(x, y)
 true_U = true_U.reshape(n, n, order="F")
 true_V = true_V.reshape(n, n, order="F")
 
+U = true_U
+V = true_V
+
 speed = np.sqrt(U**2 + V**2)
 
 fig, ax = plt.subplots(figsize=(7, 7))
