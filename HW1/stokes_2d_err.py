@@ -169,25 +169,36 @@ def stokes_2d(n):
     # Reshare and remove ghost points from U, V, P
     U = S[:L].reshape(n, n, order="F")
     V = S[L:2*L].reshape(n, n, order="F")
-    P = S[2*L:3*L].reshape(n, n, order="F")
+    m_p = np.mean(S[2*L:3*L])
+    P = np.array([x - m_p for x in S[2*L:3*L]]).reshape(n, n, order="F")
 
     true_U = true_U.reshape(n, n, order="F")
     true_V = true_V.reshape(n, n, order="F")
+    true_P = true_P.reshape(n, n, order="F")
 
-    u_err = U - true_U
-    v_err = V - true_V
-    err_vec = np.concatenate([u_err.ravel(), v_err.ravel()])
-    L2_abs = np.linalg.norm(err_vec, 2)
-    return L2_abs
+    def two_norm(arr):
+        arr = np.array([[x ** 2 for x in row] for row in arr])
+        s = np.sum(arr)
+        return np.sqrt(s)
+
+    u_err = two_norm(U - true_U) / two_norm(true_U)
+    v_err = two_norm(V - true_V) / two_norm(true_V)
+    p_err = two_norm(P - true_P) / two_norm(true_P)
+    return [u_err, v_err, p_err]
 
 N = [x**2 for x in list(range(3, 10)) ]
 E = [stokes_2d(int(x)) for x in N]
 
 log_N = [np.log(x) for x in N]
-log_E = [np.log(x) for x in E]
+log_Ue = [np.log(x[0]) for x in E]
+log_Ve = [np.log(x[1]) for x in E]
+log_Pe = [np.log(x[2]) for x in E]
 
-plt.scatter(log_N, log_E)
+plt.scatter(log_N, log_Ue, label = 'Error U')
+plt.scatter(log_N, log_Ve, label = 'Error V')
+plt.scatter(log_N, log_Pe, label = 'Error P')
 plt.xlabel("x")
 plt.ylabel("y")
-plt.title("Scatter plot")
+plt.title("Error plots for U, V and P")
+plt.legend()
 plt.show()

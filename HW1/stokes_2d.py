@@ -221,8 +221,6 @@ X, Y = np.meshgrid(x, y)
 true_U = true_U.reshape(n, n, order="F")
 true_V = true_V.reshape(n, n, order="F")
 
-U = true_U
-V = true_V
 
 speed = np.sqrt(U**2 + V**2)
 
@@ -239,3 +237,8 @@ ax.set_aspect("equal")
 ax.set_xlabel("x"); ax.set_ylabel("y")
 ax.set_title("Streamlines (white) over speed field")
 plt.show()
+
+def two_norm(arr):
+    arr = np.array([[x**2 for x in row] for row in arr])
+    s = np.sum(arr)
+    return np.sqrt(s)
